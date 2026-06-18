@@ -1,0 +1,1514 @@
+/* style.css - Premium Stylesheet for Excel Report Compare Tool */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Light Theme Color Tokens */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  --border-color: #e2e8f0;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-light: #e0e7ff;
+  
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  
+  --color-danger: #ef4444;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  
+  --color-ignored: #6b7280;
+  --color-ignored-bg: #f3f4f6;
+  --color-ignored-border: #e5e7eb;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --radius: 12px;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  /* Dark Theme Color Tokens */
+  --bg-primary: #0b0f19;
+  --bg-secondary: #161e2e;
+  --bg-glass: rgba(22, 30, 46, 0.7);
+  --border-color: #243048;
+  
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-light: #1e1b4b;
+  
+  --color-success: #34d399;
+  --color-success-bg: #064e3b;
+  --color-success-border: #065f46;
+  
+  --color-danger: #f87171;
+  --color-danger-bg: #7f1d1d;
+  --color-danger-border: #991b1b;
+  
+  --color-warning: #fbbf24;
+  --color-warning-bg: #78350f;
+  --color-warning-border: #92400e;
+  
+  --color-ignored: #9ca3af;
+  --color-ignored-bg: #374151;
+  --color-ignored-border: #4b5563;
+}
+
+/* Global Reset & Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+}
+
+button, input, select {
+  font-family: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* App Header styling */
+header {
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand svg {
+  color: var(--color-primary);
+  width: 28px;
+  height: 28px;
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.brand h1 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.github-link:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* App Main Container */
+main {
+  flex: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Screen 1: Compare Files & Upload Form */
+.compare-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.upload-card {
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  position: relative;
+  min-height: 220px;
+}
+
+.upload-card:hover, .upload-card.dragover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  opacity: 0.95;
+}
+
+.upload-card input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-icon {
+  background-color: var(--bg-primary);
+  color: var(--color-primary);
+  padding: 1rem;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.upload-card:hover .upload-icon {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.upload-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.upload-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.file-info {
+  display: none;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  z-index: 5;
+}
+
+.file-info.active {
+  display: flex;
+}
+
+.file-info span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80%;
+  color: var(--text-primary);
+}
+
+.file-remove-btn {
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.file-remove-btn:hover {
+  background-color: var(--color-danger-bg);
+}
+
+/* Config Grid */
+.config-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.config-title {
+  font-size: 1.1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.config-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.config-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.select-control, .input-control {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.select-control:focus, .input-control:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.ignore-rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  background-color: var(--bg-primary);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* Action button */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  padding: 0.9rem 2rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading overlay & logs */
+.loading-container {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.loading-container.active {
+  display: flex;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border-color);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+  margin-bottom: 1.5rem;
+}
+
+.progress-text {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.progress-log {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: 400px;
+  word-break: break-all;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Screen 2: Dashboard & Results view */
+.results-container {
+  display: none;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.results-container.active {
+  display: flex;
+}
+
+.dashboard-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.summary-card {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.summary-card.primary::before, .summary-card.info::before { background-color: var(--color-primary); }
+.summary-card.success::before { background-color: var(--color-success); }
+.summary-card.danger::before { background-color: var(--color-danger); }
+.summary-card.warning::before { background-color: var(--color-warning); }
+
+.summary-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.summary-card-header svg {
+  width: 20px;
+  height: 20px;
+}
+
+.summary-card.primary svg, .summary-card.info svg { color: var(--color-primary); }
+.summary-card.success svg { color: var(--color-success); }
+.summary-card.danger svg { color: var(--color-danger); }
+.summary-card.warning svg { color: var(--color-warning); }
+
+.summary-card-value {
+  font-size: 2rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.summary-card-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Exports Panel */
+.export-panel {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.export-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-secondary {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
+  transform: translateY(-1px);
+}
+
+.btn-secondary.excel-btn:hover {
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background-color: var(--color-success-bg);
+}
+
+.btn-secondary.pdf-btn:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+}
+
+/* Sheet Navigator Layout */
+.comparison-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+@media (max-width: 992px) {
+  .comparison-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sheet-sidebar {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+@media (min-width: 993px) {
+  .comparison-layout {
+    height: 750px; /* Locked height on desktop viewports */
+  }
+  .sheet-sidebar {
+    height: 100%;
+  }
+  .details-panel {
+    height: 100%;
+    overflow-y: auto; /* Vertically scrolls details internally */
+  }
+}
+
+.sidebar-title {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.sheet-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sheet-item {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.sheet-item:hover {
+  background-color: var(--bg-primary);
+}
+
+.sheet-item.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.badge.match {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success-border);
+}
+
+.badge.diff {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-color: var(--color-warning-border);
+}
+
+.badge.missing {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+}
+
+.badge.additional {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: #c7d2fe;
+}
+
+/* Mobile Sheet Selector */
+.mobile-sheet-selector-container {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (max-width: 992px) {
+  .mobile-sheet-selector-container {
+    display: flex;
+  }
+  .sheet-sidebar {
+    display: none;
+  }
+}
+
+/* Details Panel styling */
+.details-panel {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0; /* Prevents horizontal layout expansion from wide tables */
+}
+
+.sheet-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.sheet-title-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sheet-title-area h2 {
+  font-size: 1.5rem;
+}
+
+/* Accordions for Sheet Level Diffs */
+.diff-section {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+.diff-section-header {
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.diff-section-header:hover {
+  background-color: var(--bg-primary);
+}
+
+.diff-section-content {
+  padding: 1.25rem;
+  display: none;
+}
+
+.diff-section.open .diff-section-content {
+  display: block;
+}
+
+.diff-section-header svg {
+  transition: transform 0.2s ease;
+}
+
+.diff-section.open .diff-section-header svg {
+  transform: rotate(180deg);
+}
+
+/* Column Differences List */
+.column-diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.column-diff-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.column-diff-item.added {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border-color: var(--color-success-border);
+}
+
+.column-diff-item.removed {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+}
+
+.column-diff-item.warning {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-color: var(--color-warning-border);
+}
+
+/* Cell Differences Table styling */
+.cell-diff-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+
+.cell-diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.cell-diff-table th {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cell-diff-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cell-diff-table tbody tr:hover {
+  background-color: var(--bg-secondary);
+}
+
+/* Search and filter tools inside Sheet Detail */
+.sheet-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.6rem 0.75rem 0.6rem 2.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.search-box svg {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  width: 16px;
+  height: 16px;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.filter-pill {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background-color: var(--border-color);
+}
+
+.filter-pill.active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+/* Comparison Grid View */
+.grid-view-wrapper {
+  position: relative;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 500px;
+  background-color: var(--bg-secondary);
+  width: 100%;
+  max-width: 100%;
+}
+
+.grid-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.grid-comparison-table th {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.grid-comparison-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 15;
+  background-color: var(--bg-primary);
+}
+
+.grid-comparison-table td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.grid-comparison-table td:first-child {
+  position: sticky;
+  left: 0;
+  background-color: var(--bg-secondary);
+  font-weight: 600;
+  z-index: 5;
+  border-right: 2px solid var(--border-color);
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.grid-comparison-table tr:hover td:first-child {
+  background-color: var(--bg-primary);
+}
+
+/* Row states in grid */
+.grid-row-missing td {
+  background-color: var(--color-danger-bg) !important;
+  color: var(--color-danger);
+}
+.grid-row-added td {
+  background-color: var(--color-success-bg) !important;
+  color: var(--color-success);
+}
+
+.grid-cell-diff {
+  background-color: var(--color-warning-bg) !important;
+  border: 2px solid var(--color-warning) !important;
+  font-weight: 500;
+  position: relative;
+}
+
+.cell-diff-val-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cell-diff-old {
+  color: var(--color-danger);
+  text-decoration: line-through;
+  font-size: 0.75rem;
+}
+
+.cell-diff-new {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+/* Pagination container styling */
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-btn {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--border-color);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Help Panel Styling */
+.help-card {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.help-card svg {
+  color: var(--color-primary);
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.help-content h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.help-content ul {
+  list-style: none;
+}
+
+.help-content li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.help-content li::before {
+  content: '•';
+  color: var(--color-primary);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+/* Footer style */
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+}
+
+/* Responsive / Mobile styles override */
+@media (max-width: 576px) {
+  main {
+    padding: 1rem;
+    gap: 1.25rem;
+  }
+  
+  header {
+    padding: 1rem;
+  }
+  
+  header h1 {
+    font-size: 1.1rem;
+  }
+  
+  .github-link span {
+    display: none;
+  }
+  
+  .summary-card {
+    padding: 1rem;
+  }
+  
+  .summary-card-value {
+    font-size: 1.75rem;
+  }
+  
+  .export-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .export-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .sheet-tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    max-width: 100%;
+  }
+  
+  .details-panel {
+    padding: 1rem;
+  }
+  
+  .grid-view-wrapper {
+    max-height: 400px;
+  }
+}
+
+/* ==========================================================================
+   VIEW SWITCHER AND EXCEL WORKBOOK VIEW STYLES
+   ========================================================================== */
+
+/* View switcher tabs styling */
+.view-mode-tabs {
+  display: flex;
+  gap: 0.75rem;
+  background-color: var(--bg-secondary);
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.view-mode-tab {
+  background: none;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+}
+
+.view-mode-tab:hover {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.view-mode-tab.active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* Results panel toggle visibility */
+.results-view {
+  display: none;
+}
+
+.results-view.active {
+  display: block;
+}
+
+/* Excel side-by-side viewer */
+.excel-viewer-card {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.excel-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.excel-viewer-title-group h2 {
+  font-size: 1.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.excel-viewer-title-group p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.excel-viewer-tools {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.excel-split-grids {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .excel-split-grids {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.excel-grid-pane {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Ensures the split pane respects 50/50 column constraints */
+}
+
+.excel-pane-title {
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.file-badge.baseline {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.file-badge.comparison {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.excel-grid-viewport {
+  overflow: auto;
+  max-height: 480px;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  background-color: var(--bg-primary);
+}
+
+/* Excel Style Table Headers */
+.excel-table {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  width: max-content;
+  min-width: 100%;
+  background-color: var(--bg-secondary);
+}
+
+.excel-table th.excel-col-letter {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  z-index: 10;
+  text-align: center;
+  font-family: monospace;
+}
+
+.excel-table td.excel-row-num {
+  position: sticky;
+  left: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 5;
+  text-align: center;
+  font-family: monospace;
+  width: 40px;
+}
+
+.excel-table td.excel-cell {
+  padding: 0.35rem 0.75rem;
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+/* Excel Highlights */
+.excel-cell-added {
+  background-color: var(--color-success-bg) !important;
+  color: var(--color-success) !important;
+  font-weight: 500;
+}
+
+.excel-cell-removed {
+  background-color: var(--color-danger-bg) !important;
+  color: var(--color-danger) !important;
+  text-decoration: line-through;
+}
+
+.excel-cell-modified {
+  background-color: var(--color-warning-bg) !important;
+  color: var(--color-warning) !important;
+  border: 1px solid var(--color-warning) !important;
+  font-weight: 500;
+}
+
+/* Excel Bottom Tabs */
+.excel-bottom-tabs {
+  display: flex;
+  gap: 2px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.25rem 0.5rem 0 0.5rem;
+  overflow-x: auto;
+}
+
+.excel-tab {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  box-shadow: 0 -1px 2px rgba(0,0,0,0.02);
+}
+
+.excel-tab:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.excel-tab.active {
+  background-color: var(--bg-secondary);
+  color: var(--color-primary);
+  border-color: var(--border-color) var(--border-color) transparent var(--border-color);
+  font-weight: 700;
+  position: relative;
+  z-index: 5;
+}
+
+.excel-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--color-primary);
+}
+
+.excel-tab.match .excel-tab-status { background-color: var(--color-success); }
+.excel-tab.diff .excel-tab-status { background-color: var(--color-warning); }
+.excel-tab.missing .excel-tab-status { background-color: var(--color-danger); }
+.excel-tab.additional .excel-tab-status { background-color: var(--color-primary); }
+
+.excel-tab-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Strikethrough tab rename styles */
+.old-tab-name {
+  text-decoration: line-through;
+  opacity: 0.6;
+  margin-right: 0.25rem;
+}
+.new-tab-name {
+  font-weight: 600;
+}
+.deleted-tag {
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  font-weight: bold;
+  opacity: 0.95;
+}
+.added-tag {
+  color: var(--color-success);
+  font-size: 0.75rem;
+  font-weight: bold;
+  opacity: 0.95;
+}

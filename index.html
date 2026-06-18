@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Excel</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <!-- SEO Tags -->
+  <meta name="description" content="A lightweight, ultra-fast client-side Excel report comparison tool. Compare sheet structures, column names, row counts, and cell values in the browser. 100% private.">
+  <meta name="keywords" content="excel comparison, diff tool, xlsx compare, sheetjs, jspdf, client-side diff, csv comparison">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css?v=3">
+  <!-- Libraries (Local) -->
+  <script src="lib/xlsx.full.min.js"></script>
+  <script src="lib/jspdf.umd.min.js"></script>
+  <script src="lib/jspdf.plugin.autotable.min.js"></script>
+  <script src="lib/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header>
+    <div class="brand">
+      <img src="logo.png" alt="Excel Compare Logo" class="brand-logo">
+      <h1>Excel Compare</h1>
+    </div>
+    <div class="header-actions">
+      <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+        <i data-lucide="moon"></i>
+      </button>
+      <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="github-link">
+        <i data-lucide="github"></i>
+        <span>GitHub</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- App Body -->
+  <main>
+    
+    <!-- Screen 1: Compare Files Setup -->
+    <section class="compare-container" id="setup-container">
+      <div class="upload-grid">
+        <!-- Baseline File A -->
+        <div class="upload-card" id="upload-card-a">
+          <input type="file" id="file-input-a" accept=".xlsx, .xls, .csv">
+          <div class="upload-icon">
+            <i data-lucide="file-up"></i>
+          </div>
+          <p class="upload-title">Choose File A (Baseline)</p>
+          <p class="upload-desc">Drag & drop or click to browse</p>
+          <p class="upload-desc">Supports .xlsx, .xls, .csv</p>
+          <div class="file-info" id="file-info-a">
+            <span id="file-name-a">filename.xlsx (0 KB)</span>
+            <button class="file-remove-btn" id="remove-file-a" title="Remove file">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Comparison File B -->
+        <div class="upload-card" id="upload-card-b">
+          <input type="file" id="file-input-b" accept=".xlsx, .xls, .csv">
+          <div class="upload-icon">
+            <i data-lucide="file-up"></i>
+          </div>
+          <p class="upload-title">Choose File B (Comparison)</p>
+          <p class="upload-desc">Drag & drop or click to browse</p>
+          <p class="upload-desc">Supports .xlsx, .xls, .csv</p>
+          <div class="file-info" id="file-info-b">
+            <span id="file-name-b">filename.xlsx (0 KB)</span>
+            <button class="file-remove-btn" id="remove-file-b" title="Remove file">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config Card -->
+      <div class="config-card">
+        <h2 class="config-title">
+          <i data-lucide="sliders"></i> Comparison Settings
+        </h2>
+        
+        <div class="config-group" style="margin-bottom: 1.5rem;">
+          <label style="margin-bottom: 0.5rem; display: block;">Ignore Rules</label>
+          <div class="ignore-rules-grid">
+            <label class="checkbox-label">
+              <input type="checkbox" id="ignore-empty-rows" checked> Ignore Empty Rows
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="ignore-case"> Ignore Case Sensitivity
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="ignore-whitespace" checked> Ignore Whitespaces
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="ignore-dates" checked> Ignore Date Formatting
+            </label>
+          </div>
+        </div>
+
+        <div class="compare-actions" style="display: flex; gap: 1rem; margin-top: 1rem;">
+          <button class="btn-primary" id="compare-btn" disabled style="flex: 2;">
+            <i data-lucide="git-compare"></i> Compare Reports
+          </button>
+          <button class="btn-secondary" id="clear-btn" style="flex: 1; justify-content: center; height: auto; padding: 0.9rem 2rem;">
+            <i data-lucide="trash-2"></i> Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Security / Help Info -->
+      <div class="help-card">
+        <i data-lucide="shield-check"></i>
+        <div class="help-content">
+          <h3>100% Client-Side Privacy</h3>
+          <ul>
+            <li>No files are ever uploaded to a server. All computation happens locally in your browser.</li>
+            <li>Ideal for confidential financial worksheets, GST ledgers, and secure client databases.</li>
+            <li>A Web Worker handles processing in the background, keeping large sheets fluid.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Processing Progress Indicator -->
+    <section class="loading-container" id="loading-container">
+      <div class="spinner"></div>
+      <p class="progress-text" id="progress-text">Comparing spreadsheets...</p>
+      <p class="progress-log" id="progress-log">Initializing background thread...</p>
+    </section>
+
+    <!-- Screen 3: Comparison Results Dashboard -->
+    <section class="results-container" id="results-container">
+      <!-- View mode switch buttons -->
+      <div class="view-mode-tabs">
+        <button class="view-mode-tab active" id="btn-view-dashboard">
+          <i data-lucide="layout-dashboard"></i> Dashboard & Diff Navigator
+        </button>
+        <button class="view-mode-tab" id="btn-view-excel">
+          <i data-lucide="grid"></i> Side-by-Side Workbook Viewer
+        </button>
+      </div>
+
+      <!-- Screen 3A: Dashboard View Container -->
+      <div id="view-dashboard-container" class="results-view active">
+        
+        <!-- Metrics Dashboard -->
+        <div class="dashboard-summary">
+          <!-- Sheets Compared -->
+          <div class="summary-card primary">
+            <div class="summary-card-header">
+              <span>Sheets Compared</span>
+              <i data-lucide="book-open"></i>
+            </div>
+            <div class="summary-card-value" id="stat-sheets-compared">0</div>
+            <div class="summary-card-desc">Total common worksheets compared</div>
+          </div>
+
+          <!-- Matched Sheets -->
+          <div class="summary-card success">
+            <div class="summary-card-header">
+              <span>Matched Sheets</span>
+              <i data-lucide="check-circle-2"></i>
+            </div>
+            <div class="summary-card-value" id="stat-matched-sheets">0</div>
+            <div class="summary-card-desc">Sheets with identical values</div>
+          </div>
+
+          <!-- Sheets with Differences -->
+          <div class="summary-card warning">
+            <div class="summary-card-header">
+              <span>Sheets with Diffs</span>
+              <i data-lucide="alert-circle"></i>
+            </div>
+            <div class="summary-card-value" id="stat-modified-sheets">0</div>
+            <div class="summary-card-desc">Sheets containing value/structure changes</div>
+          </div>
+
+          <!-- Missing Sheets -->
+          <div class="summary-card danger">
+            <div class="summary-card-header">
+              <span>Missing Sheets</span>
+              <i data-lucide="x-circle"></i>
+            </div>
+            <div class="summary-card-value" id="stat-missing-sheets">0</div>
+            <div class="summary-card-desc">Sheets missing in Comparison File B</div>
+          </div>
+
+          <!-- Additional Sheets -->
+          <div class="summary-card info">
+            <div class="summary-card-header">
+              <span>Additional Sheets</span>
+              <i data-lucide="plus-circle"></i>
+            </div>
+            <div class="summary-card-value" id="stat-additional-sheets">0</div>
+            <div class="summary-card-desc">Sheets added in Comparison File B</div>
+          </div>
+
+          <!-- Cell Mismatches -->
+          <div class="summary-card warning">
+            <div class="summary-card-header">
+              <span>Cell Mismatches</span>
+              <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="summary-card-value" id="stat-cell-changes">0</div>
+            <div class="summary-card-desc">Total mismatched cell values</div>
+          </div>
+
+          <!-- Comparison Time -->
+          <div class="summary-card">
+            <div class="summary-card-header">
+              <span>Comparison Time</span>
+              <i data-lucide="clock"></i>
+            </div>
+            <div class="summary-card-value" id="stat-elapsed-time">0s</div>
+            <div class="summary-card-desc">Time taken to compare sheets</div>
+          </div>
+        </div>
+
+      <!-- Export Panel -->
+      <div class="export-panel">
+        <span class="export-title">Export Comparison Report:</span>
+        <div class="export-buttons">
+          <button class="btn-secondary excel-btn" id="export-excel">
+            <i data-lucide="file-spreadsheet"></i> Export Excel
+          </button>
+          <button class="btn-secondary pdf-btn" id="export-pdf">
+            <i data-lucide="file-text"></i> Export PDF
+          </button>
+          <button class="btn-secondary" id="export-csv">
+            <i data-lucide="file"></i> Export CSV Diffs
+          </button>
+        </div>
+      </div>
+
+      <!-- Sheet Navigator Split Panel -->
+      <div class="comparison-layout">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sheet-sidebar">
+          <h3 class="sidebar-title">Worksheets</h3>
+          <div class="sheet-list" id="sidebar-sheet-list">
+            <!-- Sheet items filled dynamically -->
+          </div>
+        </aside>
+
+        <!-- Mobile Sheet Selector Dropdown (Mobile only) -->
+        <div class="mobile-sheet-selector-container">
+          <label for="mobile-sheet-select" style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">Choose Worksheet</label>
+          <select class="select-control" id="mobile-sheet-select">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- Sheet Detail Card -->
+        <div class="details-panel" id="details-panel">
+          
+          <!-- Sheet Header Info -->
+          <div class="sheet-header-info">
+            <div class="sheet-title-area">
+              <h2 id="detail-sheet-name">Select Sheet</h2>
+              <span class="badge" id="detail-sheet-status">Matched</span>
+            </div>
+          </div>
+
+
+
+          <!-- Section 3: Cell Value differences list (Collapsible Accordion) -->
+          <div class="diff-section" id="sec-cell-diffs" style="display: none;">
+            <div class="diff-section-header">
+              <span>Exact Cell Value Differences (<span id="count-cell-diffs">0</span>)</span>
+              <i data-lucide="chevron-down"></i>
+            </div>
+            <div class="diff-section-content" style="padding: 0.5rem;">
+              <div class="cell-diff-table-container">
+                <table class="cell-diff-table">
+                  <thead>
+                    <tr>
+                      <th>Cell</th>
+                      <th>Row/Key</th>
+                      <th>Column</th>
+                      <th>Expected (File A)</th>
+                      <th>Actual (File B)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cell-diff-table-body">
+                    <!-- Cell differences filled dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Search & Filters -->
+          <div class="sheet-tools">
+            <div class="search-box">
+              <i data-lucide="search"></i>
+              <input type="text" id="sheet-search" placeholder="Search rows, values or key columns...">
+            </div>
+            <div class="filter-pills">
+              <button class="filter-pill" data-filter="all">All Rows</button>
+              <button class="filter-pill active" data-filter="diff">Differences Only</button>
+              <button class="filter-pill" data-filter="added">Added Rows</button>
+              <button class="filter-pill" data-filter="missing">Missing Rows</button>
+              <button class="filter-pill" data-filter="modified">Modified Values</button>
+            </div>
+          </div>
+
+          <!-- Section 5: Side-by-Side Data Comparison Grid -->
+          <div class="grid-view-wrapper" id="grid-container">
+            <!-- Comparison Grid Rendered dynamically -->
+          </div>
+
+          <!-- Section 6: Grid Pagination Controls -->
+          <div class="pagination-controls" id="pagination-container">
+            <span id="pagination-info">Showing 0 - 0 of 0 records</span>
+            <div class="pagination-buttons">
+              <button class="pagination-btn" id="pagination-prev" disabled>Previous</button>
+              <button class="pagination-btn" id="pagination-next" disabled>Next</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      </div> <!-- End of view-dashboard-container -->
+
+      <!-- Screen 3B: Side-by-Side Excel Workbook Viewer -->
+      <div id="view-excel-container" class="results-view">
+        <div class="excel-viewer-card">
+          <div class="excel-viewer-header">
+            <div class="excel-viewer-title-group">
+              <h2><i data-lucide="grid-3x3"></i> Excel Workbook Diff Viewer</h2>
+              <p>Review baseline and comparison sheets side-by-side. Scrolling is synchronized.</p>
+            </div>
+            <div class="excel-viewer-tools">
+              <label class="checkbox-label" style="font-size: 0.85rem;">
+                <input type="checkbox" id="excel-sync-scroll" checked> Sync Scrolling
+              </label>
+              <label class="checkbox-label" style="font-size: 0.85rem;">
+                <input type="checkbox" id="excel-show-diffs-only" checked> Show Diffs Only
+              </label>
+            </div>
+          </div>
+
+          <div class="excel-split-grids">
+            <!-- Left Pane -->
+            <div class="excel-grid-pane">
+              <div class="excel-pane-title">
+                <span class="file-badge baseline">Baseline File A</span>
+                <span class="file-name-text" id="excel-pane-name-a">fileA_baseline.xlsx</span>
+              </div>
+              <div class="excel-grid-viewport" id="excel-viewport-a">
+                <!-- Filled dynamically -->
+              </div>
+            </div>
+
+            <!-- Right Pane -->
+            <div class="excel-grid-pane">
+              <div class="excel-pane-title">
+                <span class="file-badge comparison">Comparison File B</span>
+                <span class="file-name-text" id="excel-pane-name-b">fileB_comparison.xlsx</span>
+              </div>
+              <div class="excel-grid-viewport" id="excel-viewport-b">
+                <!-- Filled dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Excel Bottom Tabs -->
+          <div class="excel-bottom-tabs" id="excel-sheet-tabs">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- App Footer -->
+  <footer>
+    <p>© 2026 Excel Compare. Made with private client-side processing.</p>
+  </footer>
+
+  <!-- Core Javascript -->
+  <script src="compare-engine.js?v=2"></script>
+  <script src="app.js?v=2"></script>
+</body>
+</html>
