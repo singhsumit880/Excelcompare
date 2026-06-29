@@ -78,20 +78,26 @@ document.addEventListener('DOMContentLoaded', () => {
   compareBtn.addEventListener('click', startComparison);
 
   // Clear Button
-  document.getElementById('clear-btn').addEventListener('click', clearAll);
+  const clearBtn = document.getElementById('clear-btn');
+  if (clearBtn) clearBtn.addEventListener('click', clearAll);
 
   // Export Buttons
-  document.getElementById('export-excel').addEventListener('click', exportExcel);
-  document.getElementById('export-pdf').addEventListener('click', exportPdf);
-  document.getElementById('export-csv').addEventListener('click', exportCsv);
+  const expExcel = document.getElementById('export-excel');
+  if (expExcel) expExcel.addEventListener('click', exportExcel);
+  const expPdf = document.getElementById('export-pdf');
+  if (expPdf) expPdf.addEventListener('click', exportPdf);
+  const expCsv = document.getElementById('export-csv');
+  if (expCsv) expCsv.addEventListener('click', exportCsv);
 
   // Search & Filter Listeners
   const searchInput = document.getElementById('sheet-search');
-  searchInput.addEventListener('input', (e) => {
-    currentSearchQuery = e.target.value.toLowerCase().trim();
-    currentPage = 1;
-    renderCurrentSheet();
-  });
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      currentSearchQuery = e.target.value.toLowerCase().trim();
+      currentPage = 1;
+      renderCurrentSheet();
+    });
+  }
 
   // Filter Pills
   document.querySelectorAll('.filter-pill').forEach(pill => {
@@ -105,9 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Mobile Sheet dropdown change
-  document.getElementById('mobile-sheet-select').addEventListener('change', (e) => {
-    selectSheet(e.target.value);
-  });
+  const mobSelect = document.getElementById('mobile-sheet-select');
+  if (mobSelect) {
+    mobSelect.addEventListener('change', (e) => {
+      selectSheet(e.target.value);
+    });
+  }
 
   // View Switcher logic
   const btnDashboard = document.getElementById('btn-view-dashboard');
@@ -120,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnExcel.classList.remove('active');
     containerDashboard.classList.add('active');
     containerExcel.classList.remove('active');
+    renderCurrentSheet();
   });
   
   btnExcel.addEventListener('click', () => {
@@ -244,9 +254,41 @@ function checkReadyToCompare() {
   }
 }
 
+// Toast notification system helper
+function showToast(message, type = 'info', iconName = 'zap') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <i data-lucide="${iconName}"></i>
+    <span>${escapeHtml(message)}</span>
+  `;
+  container.appendChild(toast);
+  if (typeof initIcons === 'function') initIcons();
+
+  // Trigger smooth enter animation
+  setTimeout(() => toast.classList.add('show'), 10);
+
+  // Auto remove after 3.5 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
 // Main comparison dispatcher
 function startComparison() {
   if (!fileABuffer || !fileBBuffer) return;
+
+  // Trigger Toast Notification on click
+  showToast('Initializing report comparison...', 'info', 'zap');
 
   const compareBtn = document.getElementById('compare-btn');
   const loadingContainer = document.getElementById('loading-container');
@@ -276,7 +318,7 @@ function startComparison() {
         worker.terminate();
       }
       
-      worker = new Worker('worker.js?v=2');
+      worker = new Worker('worker.js?v=18');
       
       worker.onmessage = function (e) {
         const data = e.data;
@@ -348,6 +390,9 @@ function runMainThreadComparison(config, compareBtn, loadingContainer, resultsCo
 function renderDashboard(result) {
   const summary = result.summary;
   
+  // Trigger completion success Toast
+  showToast(`Comparison complete! (${summary.cellDifferences} cell diffs found)`, 'success', 'check-circle-2');
+
   // Write stats
   document.getElementById('stat-sheets-compared').textContent = summary.sheetsCompared;
   document.getElementById('stat-matched-sheets').textContent = summary.matchedSheets;
@@ -357,10 +402,33 @@ function renderDashboard(result) {
   document.getElementById('stat-cell-changes').textContent = summary.cellDifferences;
   document.getElementById('stat-elapsed-time').textContent = summary.elapsedTime;
 
-  // Render sheet list lists (sidebar & mobile selector)
+  // Dynamic show/hide summary cards based on values
+  const wMatched = document.getElementById('wrapper-matched-sheets');
+  const wModified = document.getElementById('wrapper-modified-sheets');
+  const wMissing = document.getElementById('wrapper-missing-sheets');
+  const wAdditional = document.getElementById('wrapper-additional-sheets');
+  const wCells = document.getElementById('wrapper-cell-changes');
+
+  if (wMatched) wMatched.style.display = summary.matchedSheets > 0 ? 'flex' : 'none';
+  if (wModified) wModified.style.display = summary.modifiedSheets > 0 ? 'flex' : 'none';
+  if (wMissing) wMissing.style.display = summary.missingSheets > 0 ? 'flex' : 'none';
+  if (wAdditional) wAdditional.style.display = summary.additionalSheets > 0 ? 'flex' : 'none';
+  if (wCells) wCells.style.display = summary.cellDifferences > 0 ? 'flex' : 'none';
+
+  // Render sheet list (header dropdown)
   renderSheetNavigator(result.sheetStatuses);
   
-  // Pre-initialize Excel Workbook view
+  // Activate Side-by-Side Excel view by default
+  const btnDashboard = document.getElementById('btn-view-dashboard');
+  const btnExcel = document.getElementById('btn-view-excel');
+  const containerDashboard = document.getElementById('view-dashboard-container');
+  const containerExcel = document.getElementById('view-excel-container');
+  
+  btnExcel.classList.add('active');
+  btnDashboard.classList.remove('active');
+  containerExcel.classList.add('active');
+  containerDashboard.classList.remove('active');
+
   renderExcelView();
 }
 
@@ -386,10 +454,10 @@ function formatTabNameText(sheet) {
     if (sheet.nameA === sheet.nameB) {
       return sheet.nameA;
     } else {
-      return `~~${sheet.nameA}~~ ➔ ${sheet.nameB}`;
+      return `${sheet.nameA} ➔ ${sheet.nameB}`;
     }
   } else if (sheet.nameA && !sheet.nameB) {
-    return `~~${sheet.nameA}~~ [Deleted]`;
+    return `${sheet.nameA} [Deleted]`;
   } else if (!sheet.nameA && sheet.nameB) {
     return `[Added] ${sheet.nameB}`;
   }
@@ -397,44 +465,28 @@ function formatTabNameText(sheet) {
 }
 
 function renderSheetNavigator(sheetStatuses) {
-  const sidebarList = document.getElementById('sidebar-sheet-list');
-  const mobileSelect = document.getElementById('mobile-sheet-select');
+  const headerSelect = document.getElementById('header-sheet-select');
+  if (!headerSelect) return;
   
-  sidebarList.innerHTML = '';
-  mobileSelect.innerHTML = '<option value="">-- Select Sheet to Navigate --</option>';
+  headerSelect.innerHTML = '';
   
   sheetStatuses.forEach((sheet) => {
-    // Determine status badge
-    let badgeClass = 'match';
     let badgeText = 'Match';
+    if (sheet.status === 'Differences') badgeText = 'Diffs';
+    else if (sheet.status === 'Missing') badgeText = 'Missing';
+    else if (sheet.status === 'Additional') badgeText = 'Added';
     
-    if (sheet.status === 'Differences') {
-      badgeClass = 'diff';
-      badgeText = 'Diffs';
-    } else if (sheet.status === 'Missing') {
-      badgeClass = 'missing';
-      badgeText = 'Missing';
-    } else if (sheet.status === 'Additional') {
-      badgeClass = 'additional';
-      badgeText = 'Added';
-    }
-    
-    // Sidebar item
-    const btn = document.createElement('button');
-    btn.className = 'sheet-item';
-    btn.dataset.sheetName = sheet.displayName;
-    btn.innerHTML = `
-      <span>${formatTabNameHTML(sheet)}</span>
-      <span class="badge ${badgeClass}">${badgeText}</span>
-    `;
-    btn.addEventListener('click', () => selectSheet(sheet.displayName));
-    sidebarList.appendChild(btn);
-    
-    // Mobile option
     const opt = document.createElement('option');
     opt.value = sheet.displayName;
     opt.textContent = `${formatTabNameText(sheet)} (${badgeText})`;
-    mobileSelect.appendChild(opt);
+    headerSelect.appendChild(opt);
+  });
+  
+  // Re-bind change listener
+  const newSelect = headerSelect.cloneNode(true);
+  headerSelect.parentNode.replaceChild(newSelect, headerSelect);
+  newSelect.addEventListener('change', (e) => {
+    selectSheet(e.target.value);
   });
   
   // Select first sheet by default
@@ -450,25 +502,15 @@ function selectSheet(displayName) {
   currentFilter = 'diff';
   
   // Reset UI search input & filter active class
-  document.getElementById('sheet-search').value = '';
+  const searchEl = document.getElementById('sheet-search');
+  if (searchEl) searchEl.value = '';
   document.querySelectorAll('.filter-pill').forEach(p => {
     if (p.dataset.filter === 'diff') p.classList.add('active');
     else p.classList.remove('active');
   });
   
-  // Update sidebar active selection style
-  const sidebarItems = document.querySelectorAll('.sheet-item');
-  sidebarItems.forEach(item => {
-    if (item.dataset.sheetName === displayName) {
-      item.classList.add('active');
-      item.scrollIntoView({ block: 'nearest' });
-    } else {
-      item.classList.remove('active');
-    }
-  });
-
-  const mobileSelect = document.getElementById('mobile-sheet-select');
-  mobileSelect.value = displayName;
+  const headerSelect = document.getElementById('header-sheet-select');
+  if (headerSelect) headerSelect.value = displayName;
 
   renderCurrentSheet();
 }
@@ -479,29 +521,23 @@ function renderCurrentSheet() {
   
   const detail = comparisonResult.sheetDetails[activeSheetName];
   
-  // Update Header Title & Status
-  const headerTitle = document.getElementById('detail-sheet-name');
-  headerTitle.textContent = '';
-  headerTitle.innerHTML = formatTabNameHTML({
-    nameA: detail.nameA,
-    nameB: detail.nameB
-  });
-
+  // Update Status Badge
   const statusBadge = document.getElementById('detail-sheet-status');
-  statusBadge.className = 'badge';
-  
-  if (detail.status === 'Match') {
-    statusBadge.classList.add('match');
-    statusBadge.textContent = 'Matched';
-  } else if (detail.status === 'Differences') {
-    statusBadge.classList.add('diff');
-    statusBadge.textContent = 'Differences Found';
-  } else if (detail.status === 'Missing') {
-    statusBadge.classList.add('missing');
-    statusBadge.textContent = 'Missing in Comparison';
-  } else if (detail.status === 'Additional') {
-    statusBadge.classList.add('additional');
-    statusBadge.textContent = 'Added in Comparison';
+  if (statusBadge) {
+    statusBadge.className = 'badge';
+    if (detail.status === 'Match') {
+      statusBadge.classList.add('match');
+      statusBadge.textContent = 'Matched';
+    } else if (detail.status === 'Differences') {
+      statusBadge.classList.add('diff');
+      statusBadge.textContent = 'Differences Found';
+    } else if (detail.status === 'Missing') {
+      statusBadge.classList.add('missing');
+      statusBadge.textContent = 'Missing in Comparison';
+    } else if (detail.status === 'Additional') {
+      statusBadge.classList.add('additional');
+      statusBadge.textContent = 'Added in Comparison';
+    }
   }
 
   // Cell Differences Section
@@ -612,18 +648,18 @@ function renderComparisonGrid(detail) {
 
   const matchedRowIndices = [];
   
+  const rowSlots = detail.rowSlots || [];
   for (let r = 0; r < detail.maxRows; r++) {
+    const rowSlot = rowSlots[r] || { type: 'match', mapText: `${r+1}:${r+1}` };
+    
     // 1. Filter pill rules
     let rowHasDiff = false;
     if (detail.diffMask[r]) {
       rowHasDiff = detail.diffMask[r].some(val => val === true);
     }
     
-    let isRowEmptyA = !detail.gridA[r] || detail.gridA[r].every(val => val === undefined || val === null || val === '');
-    let isRowEmptyB = !detail.gridB[r] || detail.gridB[r].every(val => val === undefined || val === null || val === '');
-    
-    let isAddedRow = isRowEmptyA && !isRowEmptyB;
-    let isMissingRow = !isRowEmptyA && isRowEmptyB;
+    let isAddedRow = rowSlot.type === 'added';
+    let isMissingRow = rowSlot.type === 'deleted';
     let isModifiedRow = rowHasDiff && !isAddedRow && !isMissingRow;
     
     let matchesFilter = true;
@@ -637,11 +673,9 @@ function renderComparisonGrid(detail) {
     if (currentSearchQuery) {
       matchesSearch = false;
       const searchLower = currentSearchQuery.toLowerCase();
-      // Search in row index/number
-      if (String(r + 1).includes(searchLower)) {
+      if (String(rowSlot.mapText).toLowerCase().includes(searchLower)) {
         matchesSearch = true;
       } else {
-        // Search in grid A/B cell values
         const colsA = detail.gridA[r] || [];
         const colsB = detail.gridB[r] || [];
         for (let c = 0; c < detail.maxCols; c++) {
@@ -659,6 +693,7 @@ function renderComparisonGrid(detail) {
     if (matchesFilter && matchesSearch) {
       matchedRowIndices.push({
         rowIndex: r,
+        rowSlot,
         isAddedRow,
         isMissingRow,
         isModifiedRow,
@@ -718,14 +753,32 @@ function renderComparisonGrid(detail) {
   const thead = document.createElement('thead');
   const headerTr = document.createElement('tr');
   
-  // Row number header
-  const thRow = document.createElement('th');
-  thRow.textContent = 'Row';
-  headerTr.appendChild(thRow);
+  // Frozen Header 1: Row Mapping (@:@)
+  const thMap = document.createElement('th');
+  thMap.textContent = '@:@';
+  thMap.title = 'Row Mapping';
+  headerTr.appendChild(thMap);
   
+  // Frozen Header 2: Status Indicator (!)
+  const thStatus = document.createElement('th');
+  thStatus.textContent = '!';
+  thStatus.title = 'Diff Status Indicator';
+  headerTr.appendChild(thStatus);
+  
+  const columnSlots = detail.columnSlots || [];
   for (let c = 0; c < detail.maxCols; c++) {
     const th = document.createElement('th');
-    th.textContent = getExcelColLetter(c);
+    const slot = columnSlots[c] || { mapText: getExcelColLetter(c), type: 'match' };
+    
+    th.textContent = slot.mapText;
+    if (slot.type === 'added') {
+      th.className = 'col-added-header';
+      th.title = `Column is Added in Comparison File`;
+    } else if (slot.type === 'deleted') {
+      th.className = 'col-deleted-header';
+      th.title = `Column is Deleted in Comparison File`;
+    }
+    
     headerTr.appendChild(th);
   }
   thead.appendChild(headerTr);
@@ -735,6 +788,7 @@ function renderComparisonGrid(detail) {
   const tbody = document.createElement('tbody');
   paginatedRowMeta.forEach(meta => {
     const r = meta.rowIndex;
+    const slotInfo = meta.rowSlot || { mapText: `${r+1}:${r+1}` };
     const tr = document.createElement('tr');
     
     // Row classes
@@ -744,14 +798,28 @@ function renderComparisonGrid(detail) {
       tr.className = 'grid-row-added';
     }
     
-    // First cell (Row index)
-    const tdRow = document.createElement('td');
-    tdRow.textContent = r + 1;
-    tr.appendChild(tdRow);
+    // Cell 1: Row mapping index
+    const tdMap = document.createElement('td');
+    tdMap.textContent = slotInfo.mapText;
+    tr.appendChild(tdMap);
     
-    // Values
+    // Cell 2: Status tag symbol
+    const tdStatus = document.createElement('td');
+    if (meta.isMissingRow) {
+      tdStatus.innerHTML = '<span class="tag-deleted">---</span>';
+    } else if (meta.isAddedRow) {
+      tdStatus.innerHTML = '<span class="tag-added">+++</span>';
+    } else if (meta.isModifiedRow) {
+      tdStatus.innerHTML = '<span class="tag-modified">➔</span>';
+    } else {
+      tdStatus.innerHTML = '<span style="color:var(--text-muted); opacity:0.7;">=</span>';
+    }
+    tr.appendChild(tdStatus);
+    
+    // Data Values
     for (let c = 0; c < detail.maxCols; c++) {
       const td = document.createElement('td');
+      const slot = columnSlots[c] || { type: 'match' };
       const valA = (detail.gridA[r] && detail.gridA[r][c] !== undefined) ? detail.gridA[r][c] : '';
       const valB = (detail.gridB[r] && detail.gridB[r][c] !== undefined) ? detail.gridB[r][c] : '';
       const isDiff = detail.diffMask[r] ? detail.diffMask[r][c] : false;
@@ -761,7 +829,13 @@ function renderComparisonGrid(detail) {
       } else if (meta.isAddedRow) {
         td.textContent = String(valB);
       } else {
-        if (isDiff) {
+        if (slot.type === 'added') {
+          td.className = 'grid-col-added';
+          td.textContent = String(valB);
+        } else if (slot.type === 'deleted') {
+          td.className = 'grid-col-deleted';
+          td.textContent = String(valA);
+        } else if (isDiff) {
           td.className = 'grid-cell-diff';
           const wrapper = document.createElement('div');
           wrapper.className = 'cell-diff-val-wrapper';
@@ -770,11 +844,16 @@ function renderComparisonGrid(detail) {
           oldSpan.className = 'cell-diff-old';
           oldSpan.textContent = valA !== '' ? String(valA) : '(Empty)';
           
+          const arrowSpan = document.createElement('span');
+          arrowSpan.className = 'cell-diff-arrow';
+          arrowSpan.textContent = '➔';
+
           const newSpan = document.createElement('span');
           newSpan.className = 'cell-diff-new';
           newSpan.textContent = valB !== '' ? String(valB) : '(Empty)';
           
           wrapper.appendChild(oldSpan);
+          wrapper.appendChild(arrowSpan);
           wrapper.appendChild(newSpan);
           td.appendChild(wrapper);
         } else {

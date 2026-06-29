@@ -9,7 +9,7 @@
   <meta name="description" content="A lightweight, ultra-fast client-side Excel report comparison tool. Compare sheet structures, column names, row counts, and cell values in the browser. 100% private.">
   <meta name="keywords" content="excel comparison, diff tool, xlsx compare, sheetjs, jspdf, client-side diff, csv comparison">
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=18">
   <!-- Libraries (Local) -->
   <script src="lib/xlsx.full.min.js"></script>
   <script src="lib/jspdf.umd.min.js"></script>
@@ -135,21 +135,22 @@
     <section class="results-container" id="results-container">
       <!-- View mode switch buttons -->
       <div class="view-mode-tabs">
-        <button class="view-mode-tab active" id="btn-view-dashboard">
-          <i data-lucide="layout-dashboard"></i> Dashboard & Diff Navigator
-        </button>
-        <button class="view-mode-tab" id="btn-view-excel">
+        <button class="view-mode-tab active" id="btn-view-excel">
           <i data-lucide="grid"></i> Side-by-Side Workbook Viewer
+        </button>
+        <button class="view-mode-tab" id="btn-view-dashboard">
+          <i data-lucide="layout-dashboard"></i> Dashboard & Diff Navigator
         </button>
       </div>
 
       <!-- Screen 3A: Dashboard View Container -->
-      <div id="view-dashboard-container" class="results-view active">
+      <div id="view-dashboard-container" class="results-view">
         
+        <!-- Metrics Dashboard -->
         <!-- Metrics Dashboard -->
         <div class="dashboard-summary">
           <!-- Sheets Compared -->
-          <div class="summary-card primary">
+          <div class="summary-card primary" id="wrapper-sheets-compared">
             <div class="summary-card-header">
               <span>Sheets Compared</span>
               <i data-lucide="book-open"></i>
@@ -159,7 +160,7 @@
           </div>
 
           <!-- Matched Sheets -->
-          <div class="summary-card success">
+          <div class="summary-card success" id="wrapper-matched-sheets">
             <div class="summary-card-header">
               <span>Matched Sheets</span>
               <i data-lucide="check-circle-2"></i>
@@ -169,7 +170,7 @@
           </div>
 
           <!-- Sheets with Differences -->
-          <div class="summary-card warning">
+          <div class="summary-card warning" id="wrapper-modified-sheets">
             <div class="summary-card-header">
               <span>Sheets with Diffs</span>
               <i data-lucide="alert-circle"></i>
@@ -179,7 +180,7 @@
           </div>
 
           <!-- Missing Sheets -->
-          <div class="summary-card danger">
+          <div class="summary-card danger" id="wrapper-missing-sheets">
             <div class="summary-card-header">
               <span>Missing Sheets</span>
               <i data-lucide="x-circle"></i>
@@ -189,7 +190,7 @@
           </div>
 
           <!-- Additional Sheets -->
-          <div class="summary-card info">
+          <div class="summary-card info" id="wrapper-additional-sheets">
             <div class="summary-card-header">
               <span>Additional Sheets</span>
               <i data-lucide="plus-circle"></i>
@@ -199,7 +200,7 @@
           </div>
 
           <!-- Cell Mismatches -->
-          <div class="summary-card warning">
+          <div class="summary-card warning" id="wrapper-cell-changes">
             <div class="summary-card-header">
               <span>Cell Mismatches</span>
               <i data-lucide="alert-triangle"></i>
@@ -209,7 +210,7 @@
           </div>
 
           <!-- Comparison Time -->
-          <div class="summary-card">
+          <div class="summary-card" id="wrapper-elapsed-time">
             <div class="summary-card-header">
               <span>Comparison Time</span>
               <i data-lucide="clock"></i>
@@ -235,31 +236,21 @@
         </div>
       </div>
 
-      <!-- Sheet Navigator Split Panel -->
+      <!-- Sheet Navigator Split Panel (Full Width) -->
       <div class="comparison-layout">
-        <!-- Sidebar Navigation (Desktop) -->
-        <aside class="sheet-sidebar">
-          <h3 class="sidebar-title">Worksheets</h3>
-          <div class="sheet-list" id="sidebar-sheet-list">
-            <!-- Sheet items filled dynamically -->
-          </div>
-        </aside>
-
-        <!-- Mobile Sheet Selector Dropdown (Mobile only) -->
-        <div class="mobile-sheet-selector-container">
-          <label for="mobile-sheet-select" style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">Choose Worksheet</label>
-          <select class="select-control" id="mobile-sheet-select">
-            <!-- Populated dynamically -->
-          </select>
-        </div>
-
-        <!-- Sheet Detail Card -->
+        <!-- Sheet Detail Card (Full Width) -->
         <div class="details-panel" id="details-panel">
           
-          <!-- Sheet Header Info -->
+          <!-- Sheet Header Info with Inline Worksheet Dropdown -->
           <div class="sheet-header-info">
             <div class="sheet-title-area">
-              <h2 id="detail-sheet-name">Select Sheet</h2>
+              <div class="sheet-select-wrapper">
+                <i data-lucide="layers" class="sheet-select-icon"></i>
+                <span class="sheet-select-label">Worksheet:</span>
+                <select id="header-sheet-select" class="header-sheet-dropdown">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
               <span class="badge" id="detail-sheet-status">Matched</span>
             </div>
           </div>
@@ -326,7 +317,7 @@
       </div> <!-- End of view-dashboard-container -->
 
       <!-- Screen 3B: Side-by-Side Excel Workbook Viewer -->
-      <div id="view-excel-container" class="results-view">
+      <div id="view-excel-container" class="results-view active">
         <div class="excel-viewer-card">
           <div class="excel-viewer-header">
             <div class="excel-viewer-title-group">
@@ -383,7 +374,7 @@
   </footer>
 
   <!-- Core Javascript -->
-  <script src="compare-engine.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="compare-engine.js?v=18"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

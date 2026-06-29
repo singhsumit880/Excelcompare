@@ -90,6 +90,142 @@ function compareWorkbooks(fileABuffer, fileBBuffer, config, onProgress) {
     return str;
   }
 
+  // Universal Column & Row Alignment Algorithms (ts-excel-compare model)
+  function getColumnSlots(rowsA, rowsB) {
+    let maxCols = 0;
+    for (let r = 0; r < rowsA.length; r++) {
+      if (rowsA[r] && rowsA[r].length > maxCols) maxCols = rowsA[r].length;
+    }
+    for (let r = 0; r < rowsB.length; r++) {
+      if (rowsB[r] && rowsB[r].length > maxCols) maxCols = rowsB[r].length;
+    }
+
+    const slots = [];
+    for (let c = 0; c < maxCols; c++) {
+      const letter = getExcelColLetter(c);
+      slots.push({
+        type: 'match',
+        colA: c,
+        colB: c,
+        labelA: letter,
+        labelB: letter,
+        mapText: `${letter}:${letter}`
+      });
+    }
+    return slots;
+  }
+
+  function alignRows(rowsA, rowsB, rules, normFn) {
+    const lenA = rowsA.length;
+    const lenB = rowsB.length;
+    if (lenA === 0 && lenB === 0) return [];
+
+    function getRowSig(row) {
+      if (!row) return '';
+      return row.map(val => String(normFn(val, rules))).join('|');
+    }
+
+    function getRowKey(row) {
+      if (!row) return '';
+      for (let i = 0; i < row.length; i++) {
+        if (row[i] !== undefined && row[i] !== null && row[i] !== '') {
+          const norm = normFn(row[i], rules);
+          if (!isEmpty(norm)) return String(norm);
+        }
+      }
+      return '';
+    }
+
+    const sigsA = rowsA.map(getRowSig);
+    const sigsB = rowsB.map(getRowSig);
+    const keysA = rowsA.map(getRowKey);
+    const keysB = rowsB.map(getRowKey);
+
+    const dp = Array.from({ length: lenA + 1 }, () => Array(lenB + 1).fill(0));
+    for (let i = 0; i < lenA; i++) {
+      for (let j = 0; j < lenB; j++) {
+        let score = 0;
+        if (sigsA[i] !== '' && sigsA[i] === sigsB[j]) score = 2;
+        else if (keysA[i] !== '' && keysA[i] === keysB[j]) score = 1;
+
+        if (score > 0) {
+          dp[i + 1][j + 1] = dp[i][j] + score;
+        } else {
+          dp[i + 1][j + 1] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+    }
+
+    let i = lenA, j = lenB;
+    const matched = [];
+    while (i > 0 && j > 0) {
+      let score = 0;
+      if (sigsA[i - 1] !== '' && sigsA[i - 1] === sigsB[j - 1]) score = 2;
+      else if (keysA[i - 1] !== '' && keysA[i - 1] === keysB[j - 1]) score = 1;
+
+      if (score > 0 && dp[i][j] === dp[i - 1][j - 1] + score) {
+        matched.unshift({ rowA: i - 1, rowB: j - 1 });
+        i--; j--;
+      } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+        i--;
+      } else {
+        j--;
+      }
+    }
+
+    if (matched.length === 0 && lenA > 0 && lenB > 0) {
+      const max = Math.max(lenA, lenB);
+      const slots = [];
+      for (let k = 0; k < max; k++) {
+        const rA = k < lenA ? k : null;
+        const rB = k < lenB ? k : null;
+        let type = 'match';
+        if (rA !== null && rB === null) type = 'deleted';
+        if (rA === null && rB !== null) type = 'added';
+        const labelA = rA !== null ? String(rA + 1) : '-';
+        const labelB = rB !== null ? String(rB + 1) : '-';
+        let mapText = `${labelA}:${labelB}`;
+        if (type === 'added') mapText = `-:${labelB}`;
+        if (type === 'deleted') mapText = `${labelA}:-`;
+        slots.push({ type, rowA: rA, rowB: rB, labelA, labelB, mapText });
+      }
+      return slots;
+    }
+
+    const slots = [];
+    let curA = 0, curB = 0;
+
+    for (const pair of matched) {
+      while (curA < pair.rowA) {
+        const labelA = String(curA + 1);
+        slots.push({ type: 'deleted', rowA: curA, rowB: null, labelA, labelB: '-', mapText: `${labelA}:-` });
+        curA++;
+      }
+      while (curB < pair.rowB) {
+        const labelB = String(curB + 1);
+        slots.push({ type: 'added', rowA: null, rowB: curB, labelA: '-', labelB, mapText: `-:${labelB}` });
+        curB++;
+      }
+      const labelA = String(pair.rowA + 1);
+      const labelB = String(pair.rowB + 1);
+      slots.push({ type: 'match', rowA: pair.rowA, rowB: pair.rowB, labelA, labelB, mapText: `${labelA}:${labelB}` });
+      curA++; curB++;
+    }
+
+    while (curA < lenA) {
+      const labelA = String(curA + 1);
+      slots.push({ type: 'deleted', rowA: curA, rowB: null, labelA, labelB: '-', mapText: `${labelA}:-` });
+      curA++;
+    }
+    while (curB < lenB) {
+      const labelB = String(curB + 1);
+      slots.push({ type: 'added', rowA: null, rowB: curB, labelA: '-', labelB, mapText: `-:${labelB}` });
+      curB++;
+    }
+
+    return slots;
+  }
+
   // Compare Tab by Tab based on index
   for (let i = 0; i < maxSheets; i++) {
     const nameA = sheetsA[i];
@@ -117,16 +253,14 @@ function compareWorkbooks(fileABuffer, fileBBuffer, config, onProgress) {
         rowsB = rowsB.filter(row => row.some(cell => !isEmpty(cell)));
       }
       
-      const maxRows = Math.max(rowsA.length, rowsB.length);
+      // Standardize Columns mapping
+      const columnSlots = getColumnSlots(rowsA, rowsB);
+      const maxCols = columnSlots.length;
       
-      // Find maximum columns in any row
-      let maxCols = 0;
-      for (let r = 0; r < maxRows; r++) {
-        const lenA = (rowsA[r] || []).length;
-        const lenB = (rowsB[r] || []).length;
-        maxCols = Math.max(maxCols, lenA, lenB);
-      }
-      
+      // Align Rows dynamically via signatures
+      const rowSlots = alignRows(rowsA, rowsB, config, normalizeValue);
+      const maxRows = rowSlots.length;
+
       const gridA = [];
       const gridB = [];
       const diffMask = [];
@@ -135,36 +269,46 @@ function compareWorkbooks(fileABuffer, fileBBuffer, config, onProgress) {
       let sheetHasDiff = nameA !== nameB; // Different tab name is a difference
       
       for (let r = 0; r < maxRows; r++) {
-        const rowA = rowsA[r] || [];
-        const rowB = rowsB[r] || [];
+        const rowSlot = rowSlots[r];
+        const rowA = rowSlot.rowA !== null ? (rowsA[rowSlot.rowA] || []) : [];
+        const rowB = rowSlot.rowB !== null ? (rowsB[rowSlot.rowB] || []) : [];
         
         const gridRowA = [];
         const gridRowB = [];
         const diffRowMask = [];
         
         for (let c = 0; c < maxCols; c++) {
-          const valA = rowA[c] !== undefined ? rowA[c] : '';
-          const valB = rowB[c] !== undefined ? rowB[c] : '';
+          const slot = columnSlots[c];
+          const valA = (slot.colA !== null && rowA[slot.colA] !== undefined) ? rowA[slot.colA] : '';
+          const valB = (slot.colB !== null && rowB[slot.colB] !== undefined) ? rowB[slot.colB] : '';
           
           gridRowA.push(valA);
           gridRowB.push(valB);
           
-          // Compare normalized cell values
-          const normA = normalizeValue(valA, config);
-          const normB = normalizeValue(valB, config);
+          let isDiff = false;
+          if (rowSlot.type === 'added') {
+            isDiff = !isEmpty(valB);
+          } else if (rowSlot.type === 'deleted') {
+            isDiff = !isEmpty(valA);
+          } else {
+            const normA = normalizeValue(valA, config);
+            const normB = normalizeValue(valB, config);
+            isDiff = normA !== normB;
+          }
           
-          const isDiff = normA !== normB;
           diffRowMask.push(isDiff);
           
           if (isDiff) {
             sheetHasDiff = true;
             totalCellDifferences++;
-            const cellRef = XLSX.utils.encode_cell({ c: c, r: r });
+            const colLet = slot.labelB !== '-' ? slot.labelB : slot.labelA;
+            const displayRow = rowSlot.labelB !== '-' ? rowSlot.labelB : rowSlot.labelA;
+            const cellRef = `${colLet}${displayRow}`;
             cells.push({
               cellRef,
-              row: r + 1,
+              row: displayRow,
               col: c,
-              colLetter: getExcelColLetter(c),
+              colLetter: colLet,
               expected: isEmpty(valA) ? '(Empty)' : String(valA),
               actual: isEmpty(valB) ? '(Empty)' : String(valB)
             });
@@ -195,7 +339,9 @@ function compareWorkbooks(fileABuffer, fileBBuffer, config, onProgress) {
         cells,
         gridA,
         gridB,
-        diffMask
+        diffMask,
+        columnSlots,
+        rowSlots
       };
       
     } 
